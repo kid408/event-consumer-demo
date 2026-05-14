@@ -7,6 +7,26 @@ job "event-consumer-demo" {
   group "event-consumer-demo" {
     count = var.count
 
+    update {
+      max_parallel      = 1
+      health_check      = "checks"
+      min_healthy_time  = "10s"
+      healthy_deadline  = "5m"
+      progress_deadline = "10m"
+      auto_revert       = true
+      canary            = 0
+      stagger           = "30s"
+    }
+
+    migrate {
+      max_parallel     = 1
+      health_check     = "checks"
+      min_healthy_time = "10s"
+      healthy_deadline = "5m"
+    }
+
+    shutdown_delay = "20s"
+
     volume "logs" {
       type   = "host"
       source = var.host_volume
@@ -26,8 +46,8 @@ job "event-consumer-demo" {
         name     = "event-consumer-demo HTTP Check"
         type     = "http"
         path     = "/healthz"
-        interval = "10s"
-        timeout  = "2s"
+        interval = "3s"
+        timeout  = "1s"
       }
     }
 
@@ -40,14 +60,16 @@ job "event-consumer-demo" {
         name     = "event-consumer-demo Metrics Check"
         type     = "http"
         path     = "/metrics"
-        interval = "10s"
-        timeout  = "2s"
+        interval = "3s"
+        timeout  = "1s"
       }
     }
 
     task "event-consumer-demo" {
       driver = "docker"
       user   = "root"
+      kill_signal  = "SIGTERM"
+      kill_timeout = "30s"
 
       volume_mount {
         volume      = "logs"

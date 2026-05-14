@@ -4,7 +4,7 @@ namespace   = "default"
 
 image = "event-consumer-demo:dev"
 
-consul_service_tags = []
+consul_service_tags = ["prometheus.enabled=true"]
 discovery_service_tags = []
 
 count  = 1
