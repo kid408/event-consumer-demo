@@ -8,7 +8,7 @@ pipeline {
   environment {
     NOMAD_ADDR = 'http://127.0.0.1:4646'
     CONSUL_ADDR = 'http://127.0.0.1:8500'
-    IMAGE_TAG = 'dev'
+    IMAGE_TAG = "${env.BUILD_NUMBER ?: 'dev'}"
   }
 
   stages {
@@ -70,8 +70,16 @@ pipeline {
       steps {
         sh '''
           set -eu
-          docker build -f Dockerfile -t event-consumer-demo:${IMAGE_TAG} .
+          docker buildx build \
+            --platform linux/amd64 \
+            --provenance=false \
+            --load \
+            -f Dockerfile \
+            -t event-consumer-demo:${IMAGE_TAG} \
+            .
+          docker tag event-consumer-demo:${IMAGE_TAG} event-consumer-demo:dev
           docker image inspect event-consumer-demo:${IMAGE_TAG} >/dev/null
+          docker image inspect event-consumer-demo:dev >/dev/null
         '''
       }
     }
@@ -82,7 +90,10 @@ pipeline {
           set -eu
           export NOMAD_ADDR="${NOMAD_ADDR}"
           docker rm -f event-consumer-demo || true
-          nomad job run -detach -var-file=nomad/event-consumer.vars.hcl nomad/event-consumer.nomad.hcl
+          nomad job run -detach \
+            -var-file=nomad/event-consumer.vars.hcl \
+            -var "image=event-consumer-demo:${IMAGE_TAG}" \
+            nomad/event-consumer.nomad.hcl
         '''
       }
     }

@@ -146,6 +146,27 @@ type eventRecord struct {
 	KafkaTimestamp    time.Time `json:"kafka_timestamp"`
 }
 
+type clickhouseEventRecord struct {
+	EventTime         string `json:"event_time"`
+	ConsumedAt        string `json:"consumed_at"`
+	EventID           string `json:"event_id"`
+	SessionID         string `json:"session_id"`
+	ClientID          string `json:"client_id"`
+	UserID            uint64 `json:"user_id"`
+	DeviceID          string `json:"device_id"`
+	Action            string `json:"action"`
+	Payload           string `json:"payload"`
+	GatewayID         string `json:"gateway_id"`
+	WorkerID          string `json:"worker_id"`
+	SnapshotObjectKey string `json:"snapshot_object_key"`
+	SnapshotExists    bool   `json:"snapshot_exists"`
+	SnapshotSizeBytes int64  `json:"snapshot_size_bytes"`
+	SnapshotPayload   string `json:"snapshot_payload"`
+	KafkaPartition    int    `json:"kafka_partition"`
+	KafkaOffset       int64  `json:"kafka_offset"`
+	KafkaTimestamp    string `json:"kafka_timestamp"`
+}
+
 type logEntry struct {
 	Level            string `json:"level"`
 	Event            string `json:"event"`
@@ -500,7 +521,28 @@ func (a *app) insertRecord(ctx context.Context, record *eventRecord) error {
 		return nil
 	}
 
-	body, err := json.Marshal(record)
+	row := clickhouseEventRecord{
+		EventTime:         formatClickHouseDateTime64(record.EventTime),
+		ConsumedAt:        formatClickHouseDateTime64(record.ConsumedAt),
+		EventID:           record.EventID,
+		SessionID:         record.SessionID,
+		ClientID:          record.ClientID,
+		UserID:            record.UserID,
+		DeviceID:          record.DeviceID,
+		Action:            record.Action,
+		Payload:           record.Payload,
+		GatewayID:         record.GatewayID,
+		WorkerID:          record.WorkerID,
+		SnapshotObjectKey: record.SnapshotObjectKey,
+		SnapshotExists:    record.SnapshotExists,
+		SnapshotSizeBytes: record.SnapshotSizeBytes,
+		SnapshotPayload:   record.SnapshotPayload,
+		KafkaPartition:    record.KafkaPartition,
+		KafkaOffset:       record.KafkaOffset,
+		KafkaTimestamp:    formatClickHouseDateTime64(record.KafkaTimestamp),
+	}
+
+	body, err := json.Marshal(row)
 	if err != nil {
 		return err
 	}
@@ -667,6 +709,14 @@ func parseEventTime(processedAt string, sentAt string) time.Time {
 		}
 	}
 	return time.Now()
+}
+
+func formatClickHouseDateTime64(value time.Time) string {
+	location, err := time.LoadLocation("Asia/Shanghai")
+	if err != nil {
+		return value.Format("2006-01-02 15:04:05.000")
+	}
+	return value.In(location).Format("2006-01-02 15:04:05.000")
 }
 
 func urlQueryEscape(value string) string {
