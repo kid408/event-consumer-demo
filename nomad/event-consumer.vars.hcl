@@ -11,7 +11,7 @@ count  = 1
 cpu    = 100
 memory = 128
 
-kafka_brokers      = "127.0.0.1:9092"
+kafka_brokers      = "127.0.0.1:29092,127.0.0.1:39092,127.0.0.1:49092"
 kafka_topic        = "user-session-events"
 kafka_group_id     = "event-consumer-demo"
 
@@ -21,7 +21,7 @@ minio_secret_key   = "minioadmin123"
 minio_bucket       = "login-snapshots"
 minio_use_ssl      = "false"
 
-clickhouse_endpoint = "http://127.0.0.1:8123"
+clickhouse_endpoint = "http://127.0.0.1:18123"
 clickhouse_user     = "default"
 clickhouse_password = ""
 clickhouse_database = "app"

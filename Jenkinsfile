@@ -70,7 +70,8 @@ pipeline {
       steps {
         sh '''
           set -eu
-          docker buildx build -f Dockerfile -t event-consumer-demo:${IMAGE_TAG} . --load
+          docker build -f Dockerfile -t event-consumer-demo:${IMAGE_TAG} .
+          docker image inspect event-consumer-demo:${IMAGE_TAG} >/dev/null
         '''
       }
     }
