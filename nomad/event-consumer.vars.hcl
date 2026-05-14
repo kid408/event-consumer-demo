@@ -22,8 +22,8 @@ minio_bucket       = "login-snapshots"
 minio_use_ssl      = "false"
 
 clickhouse_endpoint = "http://127.0.0.1:18123"
-clickhouse_user     = "default"
-clickhouse_password = ""
+clickhouse_user     = "lab"
+clickhouse_password = "lab123"
 clickhouse_database = "app"
 clickhouse_table    = "session_events"
 
